@@ -1,2 +1,4 @@
-# Anota-es-compartilhadas-turma-9-SDG
-Repositorio contendo as anotações da turma 9 para aprendizado conjunto.
+# Anotações compartilhadas turma 9 SDG
+
+> [!ALERT]
+> Nao mexer na branch `master`. Use sua propria e depois faca `rebase` para ela.
