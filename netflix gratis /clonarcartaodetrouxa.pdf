@@ -1,0 +1,150 @@
+/**
+ * Task Management System
+ * Features: Add, Remove, Toggle Status, Filter, and Local Storage persistence.
+ */
+
+class TaskManager {
+    constructor() {
+        // Initialize tasks array and load existing tasks from localStorage
+        this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        this.DOMelements = {
+            taskInput: document.getElementById('taskInput'),
+            addTaskBtn: document.getElementById('addTaskBtn'),
+            taskList: document.getElementById('taskList'),
+            filterSelect: document.getElementById('filterSelect'),
+            searchInput: document.getElementById('searchInput')
+        };
+        
+        this.initEventListeners();
+        this.render();
+    }
+
+    /**
+     * Initializes all event listeners for user interactions.
+     */
+    initEventListeners() {
+        this.DOMelements.addTaskBtn.addEventListener('click', () => this.addTask());
+        this.DOMelements.taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addTask();
+        });
+        this.DOMelements.filterSelect.addEventListener('change', () => this.render());
+        this.DOMelements.searchInput.addEventListener('input', () => this.render());
+    }
+
+    /**
+     * Adds a new task to the task list.
+     */
+    addTask() {
+        const taskText = this.DOMelements.taskInput.value.trim();
+        
+        if (taskText === '') {
+            alert('Task description cannot be empty!');
+            return;
+        }
+
+        const newTask = {
+            id: Date.now(),
+            text: taskText,
+            completed: false,
+            createdAt: new Date().toLocaleDateString()
+        };
+
+        this.tasks.push(newTask);
+        this.updateStorage();
+        this.DOMelements.taskInput.value = ''; // Clear input field
+        this.render();
+    }
+
+    /**
+     * Deletes a specific task by its ID.
+     * @param {number} id - The task ID.
+     */
+    deleteTask(id) {
+        this.tasks = this.tasks.filter(task => task.id !== id);
+        this.updateStorage();
+        this.render();
+    }
+
+    /**
+     * Toggles the completion status of a task.
+     * @param {number} id - The task ID.
+     */
+    toggleTaskStatus(id) {
+        const task = this.tasks.find(task => task.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            this.updateStorage();
+            this.render();
+        }
+    }
+
+    /**
+     * Filters and searches tasks based on current inputs.
+     * @returns {Array} - Filtered tasks array.
+     */
+    getFilteredTasks() {
+        const filterValue = this.DOMelements.filterSelect.value;
+        const searchTerm = this.DOMelements.searchInput.value.toLowerCase();
+
+        return this.tasks.filter(task => {
+            const matchesSearch = task.text.toLowerCase().includes(searchTerm);
+            
+            if (filterValue === 'completed') {
+                return matchesSearch && task.completed;
+            } else if (filterValue === 'pending') {
+                return matchesSearch && !task.completed;
+            }
+            return matchesSearch; // 'all' or default
+        });
+    }
+
+    /**
+     * Saves the current tasks array to localStorage.
+     */
+    updateStorage() {
+        localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    }
+
+    /**
+     * Renders the tasks list to the DOM.
+     */
+    render() {
+        this.DOMelements.taskList.innerHTML = ''; // Clear list
+        const tasksToRender = this.getFilteredTasks();
+
+        if (tasksToRender.length === 0) {
+            this.DOMelements.taskList.innerHTML = '<li class="empty-message">No tasks found.</li>';
+            return;
+        }
+
+        tasksToRender.forEach(task => {
+            const li = document.createElement('li');
+            li.className = `task-item ${task.completed ? 'completed' : ''}`;
+            li.dataset.id = task.id;
+
+            li.innerHTML = `
+                <div class="task-content">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} class="toggle-checkbox">
+                    <span class="task-text">${task.text}</span>
+                    <span class="task-date">${task.createdAt}</span>
+                </div>
+                <button class="delete-btn">Delete</button>
+            `;
+
+            // Event listener for toggling status
+            const checkbox = li.querySelector('.toggle-checkbox');
+            checkbox.addEventListener('change', () => this.toggleTaskStatus(task.id));
+
+            // Event listener for deleting task
+            const deleteBtn = li.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => this.deleteTask(task.id));
+
+            this.DOMelements.taskList.appendChild(li);
+        });
+    }
+}
+
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new TaskManager();
+});
