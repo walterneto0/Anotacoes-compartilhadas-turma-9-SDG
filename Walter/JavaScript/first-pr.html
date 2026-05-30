@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liferay Rest API</title>
+  </head>
+  <body>
+    <main></main>
+
+    <script>
+        const main = document.querySelector("main")
+
+      const url =
+        "http://localhost:8080/o/headless-delivery/v1.0/sites/20117/blog-postings";
+
+      const user = "test";
+      const passWord = "learn";
+      const basicAuth = btoa(`${user}@liferay.com:${passWord}`);
+
+      // POST function
+      async function post() {
+        try {
+          const value = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${basicAuth}`,
+            },
+            body: JSON.stringify({
+              headline: "Test Blog Entry from REST Services",
+              articleBody:
+                "This article was posted by Walter via REST services provided by Liferay DXP.",
+            }),
+          });
+
+          if (!value.ok) {
+            throw new Error(`${value.status}`);
+          }
+
+          const data = await value.json();
+          console.log(data);
+          main.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function get() {
+        try {
+          const value = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${basicAuth}`,
+            }
+          });
+
+          if (!value.ok) {
+            throw new Error(`${value.status}`);
+          }
+
+          const data = await value.json();
+          console.log(data);
+          main.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      get();
+    </script>
+  </body>
+</html>
