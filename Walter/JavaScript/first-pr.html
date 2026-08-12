@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liferay Rest API</title>
+
+    <style>
+      :root {
+        --bg: #0b0e14;
+        --surface: #111620;
+        --surface-2: #161c2a;
+        --border: #1f2d47;
+        --border-glow: #1e4080;
+        --accent: #1a6cf6;
+        --accent-2: #0ff0c0;
+        --accent-dim: rgba(26, 108, 246, 0.15);
+        --text: #e8edf8;
+        --text-muted: #5a6a8a;
+        --danger: #ff4b6e;
+        --success: #0ff0c0;
+        --mono: "JetBrains Mono", monospace;
+        --display: "Syne", sans-serif;
+        --radius: 10px;
+        --glow: 0 0 24px rgba(26, 108, 246, 0.35);
+        --glow-sm: 0 0 10px rgba(26, 108, 246, 0.25);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(26, 108, 246, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(26, 108, 246, 0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: gridDrift 20s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      @keyframes gridDrift {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: 40px 40px;
+        }
+      }
+
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 0;
+        animation: orbFloat 12s ease-in-out infinite alternate;
+      }
+      .orb-1 {
+        width: 380px;
+        height: 380px;
+        background: var(--accent);
+        top: -80px;
+        left: -80px;
+        animation-delay: 0s;
+      }
+      .orb-2 {
+        width: 280px;
+        height: 280px;
+        background: var(--accent-2);
+        bottom: -60px;
+        right: -60px;
+        animation-delay: -6s;
+      }
+
+      @keyframes orbFloat {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(30px, 30px) scale(1.1);
+        }
+      }
+
+      .card {
+        position: relative;
+        z-index: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 36px 32px 28px;
+        width: min(900px, 96vw);
+        box-shadow:
+          0 8px 48px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @keyframes cardIn {
+        from {
+          opacity: 0;
+          transform: translateY(28px) scale(0.97);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        animation: fadeSlideDown 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .header-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--accent-dim);
+        border: 1px solid var(--border-glow);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .header-icon svg {
+        stroke: var(--accent);
+      }
+
+      .card-title {
+        font-family: var(--display);
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--text);
+      }
+
+      .card-title span {
+        color: var(--accent);
+      }
+
+      .status-dot {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .status-dot::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-2);
+        box-shadow: 0 0 8px var(--accent-2);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      .card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        animation: fadeSlideDown 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        align-items: start;
+      }
+
+      @media (max-width: 600px) {
+        .card-body {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px 20px;
+        transition: border-color 0.3s;
+      }
+
+      .panel:hover {
+        border-color: var(--border-glow);
+      }
+
+      .panel-title {
+        font-family: var(--display);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .panel-title::before {
+        content: "";
+        display: block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .field {
+        margin-bottom: 14px;
+        position: relative;
+      }
+
+      .field label {
+        display: block;
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        transition: color 0.2s;
+      }
+
+      .field:focus-within label {
+        color: var(--accent);
+      }
+
+      .field input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 10px 14px;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--text);
+        outline: none;
+        transition:
+          border-color 0.25s,
+          box-shadow 0.25s,
+          background 0.25s;
+      }
+
+      .field input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.6;
+      }
+
+      .field input:focus {
+        border-color: var(--accent);
+        box-shadow:
+          var(--glow-sm),
+          inset 0 0 0 1px var(--accent-dim);
+        background: #0e1420;
+      }
+
+      .methods {
+        margin-top: 20px;
+      }
+
+      .methods-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      .method-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .method-btn {
+        padding: 9px 22px;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text-muted);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .method-btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .method-btn:hover {
+        border-color: var(--accent);
+        color: var(--text);
+        box-shadow: var(--glow-sm);
+      }
+
+      .method-btn.active-get {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        color: var(--accent);
+        box-shadow: var(--glow-sm);
+      }
+
+      .method-btn.active-post {
+        border-color: var(--accent-2);
+        background: rgba(15, 240, 192, 0.1);
+        color: var(--accent-2);
+        box-shadow: 0 0 10px rgba(15, 240, 192, 0.2);
+      }
+
+      .output-panel {
+        display: flex;
+        flex-direction: column;
+        height: 370px;
+        overflow: hidden;
+      }
+
+      .output-panel .panel-title {
+        justify-content: space-between;
+      }
+
+      .output-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .output-action {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .output-action:nth-child(1):hover {
+        background: var(--danger);
+      }
+      .output-action:nth-child(2):hover {
+        background: #f5c400;
+      }
+      .output-action:nth-child(3):hover {
+        background: var(--success);
+      }
+
+      .output-box {
+        flex: 1;
+        min-height: 0px;
+        max-height: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 14px;
+        font-size: 0.78rem;
+        line-height: 1.7;
+        color: var(--text-muted);
+        overflow-y: scroll;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        position: relative;
+        transition: border-color 0.3s;
+      }
+
+      #output-box pre {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .output-box:focus-within {
+        border-color: var(--border-glow);
+      }
+
+      .output-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 10px;
+        opacity: 0.4;
+      }
+
+      .output-placeholder svg {
+        stroke: var(--text-muted);
+      }
+
+      .output-placeholder span {
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .send-row {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        animation: fadeSlideDown 0.5s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .send-btn {
+        position: relative;
+        padding: 13px 52px;
+        font-family: var(--display);
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), #0e3fa8);
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        overflow: hidden;
+        transition:
+          transform 0.2s,
+          box-shadow 0.3s;
+        box-shadow:
+          var(--glow),
+          0 4px 20px rgba(26, 108, 246, 0.3);
+      }
+
+      .send-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.15),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .send-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 0 32px rgba(26, 108, 246, 0.55),
+          0 8px 28px rgba(26, 108, 246, 0.35);
+      }
+
+      .send-btn:hover::before {
+        opacity: 1;
+      }
+
+      .send-btn:active {
+        transform: translateY(0);
+      }
+
+      .send-btn::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.18),
+          transparent
+        );
+        animation: shimmer 3s ease-in-out infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          left: -100%;
+        }
+        50% {
+          left: 140%;
+        }
+        100% {
+          left: 140%;
+        }
+      }
+
+      .notice {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        background: rgba(11, 14, 20, 0.85);
+        backdrop-filter: blur(6px);
+        animation: fadeIn 0.3s ease both;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .notice-box {
+        background: var(--surface);
+        border: 1px solid var(--border-glow);
+        border-radius: 14px;
+        padding: 36px 32px;
+        max-width: 520px;
+        width: 90%;
+        box-shadow:
+          var(--glow),
+          0 12px 60px rgba(0, 0, 0, 0.7);
+        animation: noticeIn 0.4s 0.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @keyframes noticeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.92) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .notice-icon {
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 75, 110, 0.1);
+        border: 1px solid rgba(255, 75, 110, 0.3);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+      }
+
+      .notice-icon svg {
+        stroke: var(--danger);
+      }
+
+      .notice-title {
+        font-family: var(--display);
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text);
+      }
+
+      .notice-body {
+        font-size: 0.8rem;
+        line-height: 1.7;
+        color: var(--text-muted);
+        margin-bottom: 22px;
+        list-style-position: outside;
+        padding-left: 20px;
+        list-style: none;
+        counter-reset: item;
+      }
+
+      ol.notice-body li {
+        counter-increment: item;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      ol.notice-body li::before {
+        content: counter(item) ".";
+        min-width: 18px;
+        flex-shrink: 0;
+        color: var(--text-muted);
+      }
+
+      .notice-link {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--accent);
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+        word-break: break-all;
+      }
+
+      .notice-link:hover {
+        color: var(--accent-2);
+        border-color: var(--accent-2);
+      }
+
+      .notice-close {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        border-radius: 7px;
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .notice-close:hover {
+        background: rgba(26, 108, 246, 0.25);
+        box-shadow: var(--glow-sm);
+      }
+
+      code {
+        white-space: nowrap;
+        overflow-x: auto;
+        display: inline-block;
+        background-color: #181f2c;
+        padding: 0px 10px 0px 10px;
+        border-radius: 10px;
+      }
+
+      @keyframes fadeSlideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 99px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--border-glow);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="header-icon">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+            </svg>
+          </div>
+          <h1 class="card-title">Liferay <span>REST</span> Service</h1>
+          <div class="status-dot">Ready</div>
+        </div>
+        <div class="card-body">
+          <div class="panel" id="panel-data">
+            <div class="panel-title">Your Data</div>
+            <div class="field">
+              <label for="url">Endpoint URL</label>
+              <input
+                type="url"
+                id="url"
+                name="url"
+                value="http://localhost:8080/o/headless-delivery/v1.0/sites/20117/blog-postings"
+                placeholder="http://localhost:8080/o/example..."
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="user">User</label>
+              <input
+                type="text"
+                id="user"
+                name="user"
+                value="test"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value="learn"
+              />
+            </div>
+            <div class="methods">
+              <div class="methods-label">Method</div>
+              <div class="method-group" id="method-group">
+                <button class="method-btn" id="get-btn" data-method="GET">
+                  GET
+                </button>
+                <button class="method-btn" id="post-btn" data-method="POST">
+                  POST
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="panel output-panel" id="panel-output">
+            <div class="panel-title">
+              Output
+              <div class="output-actions">
+                <div class="output-action"></div>
+                <div class="output-action"></div>
+                <div class="output-action"></div>
+              </div>
+            </div>
+            <div class="output-box" id="output-box">
+              <div class="output-placeholder" id="output-placeholder">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+                <span>Awaiting response</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="send-row">
+          <button class="send-btn" id="send-btn">Send Request</button>
+        </div>
+      </div>
+      <div class="notice" id="notice">
+        <div class="notice-box">
+          <div class="notice-icon">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <div class="notice-title">Tutorial Required</div>
+          <ol class="notice-body">
+            <li>
+              Run
+              <code
+                >docker run -it -m 8g -p 8080:8080
+                liferay/portal:7.4.3.132-ga132</code
+              >
+            </li>
+
+            <li>
+              In order to call Liferay REST services from this page, you will
+              need to enable CORS. You can enable CORS in Liferay by navigating
+              to the Control Panel > System Settings > Security Tools > Portal
+              Cross-Origin Resource Sharing (CORS).
+            </li>
+
+            <li>
+              Add new configuration entry. Make sure it includes a URL pattern
+              /o/headless-delivery/* since the REST services we are calling are
+              included in this path. Save your configuration.
+            </li>
+          </ol>
+          <button class="notice-close" id="notice-close">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+            Got it!
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const outputBox = document.getElementById("output-box");
+      const urlInput = document.getElementById("url");
+      const userInput = document.getElementById("user");
+      const passWordInput = document.getElementById("password");
+      const getBtn = document.getElementById("get-btn");
+      const postBtn = document.getElementById("post-btn");
+      const sendBtn = document.getElementById("send-btn");
+      const notice = document.getElementById("notice");
+      const noticeClose = document.getElementById("notice-close");
+
+      let method = null;
+      window.onload = () => {
+        notice.style.display = "flex";
+      };
+
+      // POST function
+      async function post(url, user, passWord, basicAuth) {
+        try {
+          const value = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${basicAuth}`,
+            },
+            body: JSON.stringify({
+              headline: "Test Blog Entry from REST Services",
+              articleBody:
+                "This article was posted by Walter via REST services provided by Liferay DXP.",
+            }),
+          });
+
+          if (!value.ok) {
+            throw new Error(`${value.status}`);
+          }
+
+          const data = await value.json();
+          outputBox.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          console.error(error);
+          window.alert(error);
+        }
+      }
+
+      // GET function
+      async function get(url, user, passWord, basicAuth) {
+        try {
+          const value = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${basicAuth}`,
+            },
+          });
+
+          if (!value.ok) {
+            throw new Error(`${value.status}`);
+          }
+
+          const data = await value.json();
+          outputBox.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          console.error(error);
+          window.alert(error);
+        }
+      }
+
+      // Change fetch method
+      function changeMethod(methodType) {
+        method = methodType;
+      }
+
+      // Buttons area
+      let getBtnPressed = false;
+      getBtn.addEventListener("click", () => {
+        if (!getBtnPressed) {
+          changeMethod(get);
+          postBtn.classList.remove("active-post");
+          getBtn.classList.add("active-get");
+          getBtnPressed = true;
+        } else {
+          changeMethod(null);
+          getBtn.classList.remove("active-get");
+          getBtnPressed = false;
+        }
+      });
+      let postBtnPressed = false;
+      postBtn.addEventListener("click", () => {
+        if (!postBtnPressed) {
+          changeMethod(post);
+          getBtn.classList.remove("active-get");
+          postBtn.classList.add("active-post");
+          postBtnPressed = true;
+        } else {
+          changeMethod(null);
+          postBtn.classList.remove("active-post");
+          postBtnPressed = false;
+        }
+      });
+      sendBtn.addEventListener("click", () => {
+        const url = urlInput.value;
+        const user = userInput.value;
+        const passWord = passWordInput.value;
+        const basicAuth = btoa(`${user}@liferay.com:${passWord}`);
+        const filled = url != 0 && user != 0 && passWord != 0 && method != null;
+        if (filled) {
+          method(url, user, passWord, basicAuth);
+        } else {
+          window.alert("Fill up all inputs!");
+        }
+      });
+      noticeClose.addEventListener("click", () => {
+        notice.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
