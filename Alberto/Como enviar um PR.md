@@ -197,46 +197,7 @@ origin/nome-da-branch (no GitHub)
       │
       │  abrir Pull Request
       ▼
-upstream (aguardando revisão / merge)# 🔀 Guia Completo: Como Enviar um Pull Request (PR)
+upstream (aguardando revisão / merge)
 
-> Um passo a passo prático para manter seu fork sincronizado e enviar suas atividades corretamente.
-
-Este guia mostra o fluxo completo para enviar uma atividade via **Pull Request (PR)**: desde sincronizar seu fork com o repositório original até abrir o PR no GitHub. Seguir esses passos na ordem certa evita conflitos, mantém seu histórico limpo e garante que cada atividade comece sempre a partir da versão mais atual do projeto.
-
----
-
-## 📑 O que você vai encontrar aqui
-
-1. Entendendo os remotes: `origin` vs `upstream`
-2. Etapa 1 — Sincronizar o fork com o upstream
-3. Etapa 2 — Criar uma nova branch
-4. Etapa 3 — Fazer as alterações da atividade
-5. Etapa 4 — Adicionar as alterações (`git add`)
-6. Etapa 5 — Commit
-7. Etapa 6 — Enviar (`push`) a branch
-8. Etapa 7 — Abrir o Pull Request
-9. Checklist rápido com todos os comandos
-10. Erros comuns e cuidados
-
----
-
-## 🧭 Entendendo os remotes: `origin` vs `upstream`
-
-Antes de tudo, vale entender os dois remotes envolvidos nesse fluxo:
-
-| Remote | O que é | Papel no fluxo |
-|---|---|---|
-| **`upstream`** | O repositório original, de onde as atividades partem | Fonte da verdade — nunca recebe push direto |
-| **`origin`** | O seu fork (cópia pessoal no seu GitHub) | Onde você envia (`push`) suas branches e de onde abre o PR |
-
-> 💡 **No seu caso:** o `upstream` costuma apontar para o repositório da atividade (por exemplo, sob a conta **brianchandotcom**), enquanto o `origin` é o seu fork pessoal desse repositório.
-
-Se ainda não tiver o `upstream` configurado localmente, adicione uma única vez com:
-
-```bash
-git remote add upstream <URL-do-repositorio-original>
 ```
-
-Você pode conferir os remotes atuais a qualquer momento com `git remote -v`.
-
 ---
