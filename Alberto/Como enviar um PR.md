@@ -126,9 +126,9 @@ Isso envia sua branch (com os commits) para o seu fork no GitHub — ainda **nã
 
 ## 🔁 Etapa 7 — Abrir o Pull Request no GitHub
 
-> ⚠️ **Importante:** o PR precisa ser aberto **no repositório `upstream`** (o repositório do Basic-Traininig que Brian fez o fork, não o seu fork). É lá que o Brian revisa as atividades — enviar o PR contra o seu próprio fork faz com que ele nunca chegue até quem vai avaliar.
+> ⚠️ **Importante:** o PR precisa ser aberto **no repositório `upstream`** (o repositório do Basic-Traininig que Brian fez o fork, não o seu). É lá que o Brian revisa as atividades — enviar o PR contra o seu próprio fork faz com que ele nunca chegue até quem vai avaliar.
 
-1. Depois do push, o GitHub costuma mostrar um banner automático **"Compare & pull request"** no seu fork — clique nele. Se preferir, acesse diretamente o **repositório `upstream`** no GitHub e vá em **Pull Requests → New Pull Request**.
+1. Depois do push, o GitHub costuma mostrar um banner automático **"Compare & pull request"** tanto no seu fork, como no do Brian, clique no banner do fork dele. Ou se preferir, acesse diretamente o **repositório `upstream`** no GitHub e vá em **Pull Requests → New Pull Request**.
 2. Confira **com atenção** os dois lados da comparação antes de criar o PR:
    - **base repository:** `upstream` / branch `master` ← é para cá que o PR precisa apontar
    - **head repository:** `origin` (seu fork) / sua branch nova ← de onde vêm suas alterações
